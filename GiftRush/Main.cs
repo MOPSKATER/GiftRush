@@ -26,11 +26,12 @@ namespace GiftRush
 
         private void OnLevelLoadComplete()
         {
-            if (SceneManager.GetActiveScene().name.Equals("Heaven_Environment") || !LevelRush.IsLevelRush() &&
-                !(LevelRush.GetCurrentLevelRushType() == LevelRush.LevelRushType.WhiteRush || LevelRush.GetCurrentLevelRushType() == LevelRush.LevelRushType.MikeyRush))
-                return;
-
             LevelData currentLevel = Singleton<Game>.Instance.GetCurrentLevel();
+
+            if (SceneManager.GetActiveScene().name.Equals("Heaven_Environment") || !LevelRush.IsLevelRush() &&
+                !(LevelRush.GetCurrentLevelRushType() == LevelRush.LevelRushType.WhiteRush || LevelRush.GetCurrentLevelRushType() == LevelRush.LevelRushType.MikeyRush) ||
+                currentLevel.isBossFight)
+                return;
 
             if (currentLevel.collectibleGiftForCharacter.ID == "GREEN")
             {
