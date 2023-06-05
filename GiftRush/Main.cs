@@ -122,6 +122,10 @@ namespace GiftRush
             target = typeof(GameDataManager).GetMethod("SaveGame", BindingFlags.Public | BindingFlags.Static);
             patch = new(typeof(Main).GetMethod("PreSaveGame"));
             harmony.Patch(target, patch);
+
+            target = typeof(MenuScreenLevelRushComplete).GetMethod("OnSetVisible");
+            patch = new(typeof(Main).GetMethod("PostOnSetVisible"));
+            harmony.Patch(target, null, patch);
         }
 
         public static bool PreventNewScore(LevelStats __instance, ref long newTime)
@@ -156,10 +160,7 @@ namespace GiftRush
             return true;
         }
 
-        public static bool PreSetBookOpen(ref bool open)
-        {
-            return !open;
-        }
+        public static bool PreSetBookOpen(ref bool open) => !open;
 
         public static bool PreSyncCharacterQuests(ref ActorData actor)
         {
@@ -175,9 +176,21 @@ namespace GiftRush
             return false;
         }
 
-        public static bool PreSaveGame()
+        public static bool PreSaveGame() => false;
+
+        public static void PostOnSetVisible(ref MenuScreenLevelRushComplete __instance)
         {
-            return false;
+            string text = LevelRush.GetCurrentLevelRushType() switch
+            {
+                LevelRush.LevelRushType.WhiteRush => "White's",
+                LevelRush.LevelRushType.MikeyRush => "Mikeys's",
+                _ => "Error"
+            };
+
+            if (text == "Error") return;
+
+            text += (LevelRush.IsHellRush() ? " Hell " : " Heaven ") + "Gift Rush";
+            __instance._rushName.textMeshProUGUI.text = text;
         }
     }
 }
