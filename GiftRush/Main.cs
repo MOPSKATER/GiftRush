@@ -84,7 +84,7 @@ namespace GiftRush
 
             CardPickup pickup = CardPickup.SpawnPickupCollectible(currentLevel.collectibleGiftForCharacter, vector, spawnerObject.transform.rotation);
             pickup.GetComponent<AudioObjectAmbience>().UpdateSFXRadiusOverride(spawner.collectibleSFXRadiusOverride);
-            pickup.SetPickupAction(delegate { Singleton<Game>.Instance.OnLevelWin(); });
+            pickup.SetPickupAction(Singleton<Game>.Instance.OnLevelWin);
         }
 
         private void PatchGame()
@@ -130,6 +130,10 @@ namespace GiftRush
             target = typeof(MenuScreenLevelRushComplete).GetMethod("OnSetVisible");
             patch = new(typeof(Main).GetMethod("PostOnSetVisible"));
             harmony.Patch(target, null, patch);
+
+            target = typeof(EnvironmentPortal).GetMethod("OnPlayerConnect");
+            patch = new(typeof(Main).GetMethod("PreOnPlayerConnect"));
+            harmony.Patch(target, patch);
         }
 
         public static bool PreventNewScore(LevelStats __instance, ref long newTime)
@@ -198,5 +202,7 @@ namespace GiftRush
             text += (LevelRush.IsHellRush() ? " Hell " : " Heaven ") + "Gift Rush";
             __instance._rushName.textMeshProUGUI.text = text;
         }
+
+        public static void PreOnPlayerConnect() => LevelRush.UpdateLevelRushTimerMicroseconds(Singleton<Game>.Instance.GetCurrentLevelTimerMicroseconds());
     }
 }
