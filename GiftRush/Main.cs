@@ -123,6 +123,10 @@ namespace GiftRush
             patch = new(typeof(Main).GetMethod("PreSaveGame"));
             harmony.Patch(target, patch);
 
+            target = typeof(GameDataManager).GetMethod("SaveLevelStats", BindingFlags.Public | BindingFlags.Static);
+            patch = new(typeof(Main).GetMethod("PreSaveLevelStats"));
+            harmony.Patch(target, patch);
+
             target = typeof(MenuScreenLevelRushComplete).GetMethod("OnSetVisible");
             patch = new(typeof(Main).GetMethod("PostOnSetVisible"));
             harmony.Patch(target, null, patch);
@@ -138,7 +142,7 @@ namespace GiftRush
             }
             else
                 __instance._newBest = false;
-            __instance._timeLastMicroseconds = newTime;
+            // __instance._timeLastMicroseconds = newTime;
             return false;
         }
 
@@ -177,6 +181,8 @@ namespace GiftRush
         }
 
         public static bool PreSaveGame() => false;
+
+        public static bool PreSaveLevelStats() => false;
 
         public static void PostOnSetVisible(ref MenuScreenLevelRushComplete __instance)
         {
