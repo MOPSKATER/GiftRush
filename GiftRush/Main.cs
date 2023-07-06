@@ -116,8 +116,6 @@ namespace GiftRush
             target = typeof(EnvironmentPortal).GetMethod("OnPlayerConnect");
             patch = new(typeof(Main).GetMethod("PreOnPlayerConnect"));
             harmony.Patch(target, patch);
-
-            Debug.Log("Done!");
         }
 
         public static bool UnlockGate(ref bool u)
