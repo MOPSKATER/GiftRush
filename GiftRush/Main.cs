@@ -1,4 +1,5 @@
-﻿using HarmonyLib;
+﻿using AntiCheat;
+using HarmonyLib;
 using MelonLoader;
 using System.Reflection;
 using UnityEngine;
@@ -10,7 +11,8 @@ namespace GiftRush
     {
         public override void OnApplicationLateStart()
         {
-            GameDataManager.powerPrefs.dontUploadToLeaderboard = true;
+            Anticheat.TriggerAnticheat();
+            Anticheat.Register("GiftRush");
             PatchGame();
 
             Game game = Singleton<Game>.Instance;
@@ -91,20 +93,8 @@ namespace GiftRush
         {
             HarmonyLib.Harmony harmony = new("de.MOPSKATER.BoofOfMemes");
 
-            MethodInfo target = typeof(LevelStats).GetMethod("UpdateTimeMicroseconds");
-            HarmonyMethod patch = new(typeof(Main).GetMethod("PreventNewScore"));
-            harmony.Patch(target, patch);
-
-            target = typeof(Game).GetMethod("OnLevelWin");
-            patch = new(typeof(Main).GetMethod("PreventNewGhost"));
-            harmony.Patch(target, patch);
-
-            target = typeof(LevelRush).GetMethod("IsCurrentLevelRushScoreBetter", BindingFlags.NonPublic | BindingFlags.Static);
-            patch = new(typeof(Main).GetMethod("PreventNewBestLevelRush"));
-            harmony.Patch(target, patch);
-
-            target = typeof(LevelGate).GetMethod("SetUnlocked");
-            patch = new(typeof(Main).GetMethod("UnlockGate"));
+            MethodInfo target = typeof(LevelGate).GetMethod("SetUnlocked");
+            HarmonyMethod patch = new(typeof(Main).GetMethod("UnlockGate"));
             harmony.Patch(target, patch);
 
             target = typeof(BookOfLife).GetMethod("SetBookOpen", BindingFlags.NonPublic | BindingFlags.Instance);
@@ -119,14 +109,6 @@ namespace GiftRush
             patch = new(typeof(Main).GetMethod("PreDoCardPickup"));
             harmony.Patch(target, patch);
 
-            target = typeof(GameDataManager).GetMethod("SaveGame", BindingFlags.Public | BindingFlags.Static);
-            patch = new(typeof(Main).GetMethod("PreSaveGame"));
-            harmony.Patch(target, patch);
-
-            target = typeof(GameDataManager).GetMethod("SaveLevelStats", BindingFlags.Public | BindingFlags.Static);
-            patch = new(typeof(Main).GetMethod("PreSaveLevelStats"));
-            harmony.Patch(target, patch);
-
             target = typeof(MenuScreenLevelRushComplete).GetMethod("OnSetVisible");
             patch = new(typeof(Main).GetMethod("PostOnSetVisible"));
             harmony.Patch(target, null, patch);
@@ -134,32 +116,8 @@ namespace GiftRush
             target = typeof(EnvironmentPortal).GetMethod("OnPlayerConnect");
             patch = new(typeof(Main).GetMethod("PreOnPlayerConnect"));
             harmony.Patch(target, patch);
-        }
 
-        public static bool PreventNewScore(LevelStats __instance, ref long newTime)
-        {
-            if (newTime < __instance._timeBestMicroseconds)
-            {
-                if (__instance._timeBestMicroseconds == 999999999999L)
-                    __instance._timeBestMicroseconds = 600000000;
-                __instance._newBest = true;
-            }
-            else
-                __instance._newBest = false;
-            // __instance._timeLastMicroseconds = newTime;
-            return false;
-        }
-
-        public static bool PreventNewGhost(Game __instance)
-        {
-            __instance.winAction = null;
-            return true;
-        }
-
-        public static bool PreventNewBestLevelRush(ref bool __result)
-        {
-            __result = false;
-            return false;
+            Debug.Log("Done!");
         }
 
         public static bool UnlockGate(ref bool u)
@@ -183,10 +141,6 @@ namespace GiftRush
             GS.WinLevel();
             return false;
         }
-
-        public static bool PreSaveGame() => false;
-
-        public static bool PreSaveLevelStats() => false;
 
         public static void PostOnSetVisible(ref MenuScreenLevelRushComplete __instance)
         {
